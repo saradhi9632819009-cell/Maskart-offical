@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ category_name }} — MASKART</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body{background:var(--ink);}
+    .cat-page{padding:36px 52px;min-height:60vh;}
+    .cat-header{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:32px;padding-bottom:22px;border-bottom:1px solid var(--border);
+    }
+    .cat-title{
+      font-family:'Playfair Display',serif;
+      font-size:32px;font-weight:900;color:var(--text);
+      display:flex;align-items:center;gap:14px;
+    }
+    .cat-count{
+      background:var(--gold-dim);border:1px solid rgba(201,162,39,0.2);
+      color:var(--gold);padding:5px 14px;border-radius:50px;
+      font-size:13px;font-weight:700;letter-spacing:0.3px;
+    }
+    .sort-wrap{display:flex;align-items:center;gap:14px;}
+    .sort-wrap select{
+      padding:10px 16px;background:var(--surface-2);border:1px solid var(--border);
+      border-radius:9px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;
+      cursor:pointer;outline:none;transition:0.2s;
+    }
+    .sort-wrap select:focus{border-color:var(--gold);}
+    .sort-wrap option{background:var(--surface-2);}
+
+    .cat-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(224px,1fr));
+      gap:18px;
+    }
+
+    .empty-state{text-align:center;padding:72px 20px;}
+    .empty-icon{font-size:72px;margin-bottom:18px;opacity:0.5;}
+    .empty-state h2{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);margin-bottom:10px;}
+    .empty-state p{color:var(--text-3);margin-bottom:26px;}
+    .back-btn{
+      display:inline-block;padding:13px 32px;background:var(--gold);
+      color:var(--ink);border-radius:50px;font-weight:700;text-decoration:none;transition:all 0.3s;
+    }
+    .back-btn:hover{background:var(--gold-light);transform:translateY(-2px);}
+
+    @media(max-width:900px){.cat-page{padding:24px 18px;}.cat-header{flex-direction:column;gap:16px;align-items:flex-start;}}
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="{{ url_for('home') }}" class="logo">MASKART</a>
+  <div class="search-container">
+    <form action="{{ url_for('search') }}" method="GET">
+      <input type="text" name="q" placeholder="Search products…" required>
+      <button type="submit">🔍 Search</button>
+    </form>
+  </div>
+  <div class="nav-links">
+    <a href="{{ url_for('login') }}">👤 Login</a>
+    <a href="{{ url_for('view_cart') }}" style="position:relative;">
+      🛒 Cart
+      <span id="cart-count" style="position:absolute;top:-8px;right:-8px;background:var(--red);color:white;width:19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">0</span>
+    </a>
+  </div>
+</nav>
+
+<div class="breadcrumb">
+  <a href="{{ url_for('home') }}">Home</a> / {{ category_name }}
+</div>
+
+<div class="cat-page">
+  {% if products %}
+  <div class="cat-header">
+    <div>
+      <div class="cat-title">
+        {% if category_name=='Mobile' %}📱{% elif category_name=='Electronics' %}💻{% elif category_name=='Watches' %}⌚{% elif category_name=='Furniture' %}🛋️{% else %}👜{% endif %}
+        {{ category_name }}
+      </div>
+    </div>
+    <div class="sort-wrap">
+      <span class="cat-count">{{ products|length }} Products</span>
+      <select onchange="sortProducts(this.value)">
+        <option value="relevance">Sort by Relevance</option>
+        <option value="price-low">Price: Low to High</option>
+        <option value="price-high">Price: High to Low</option>
+        <option value="rating">Highest Rated</option>
+        <option value="newest">Newest First</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="cat-grid" id="productsGrid">
+    {% for product in products %}
+    <a href="{{ url_for('product_details', product_id=product.id) }}" style="text-decoration:none;color:inherit;">
+      <div class="card">
+        <div class="card-image-container">
+          <img src="{{ url_for('static', filename='images/' + product.image) }}" alt="{{ product.name }}" loading="lazy">
+          {% set disc = ((1 - product.price / product.original_price)*100)|int %}
+          {% if disc > 0 %}<span class="discount-badge">-{{ disc }}%</span>{% endif %}
+        </div>
+        <div class="card-content">
+          <h3>{{ product.name }}</h3>
+          <div class="rating">
+            <span class="stars">{% set r=product.rating %}{% if r>=4.5 %}★★★★★{% elif r>=4 %}★★★★☆{% elif r>=3.5 %}★★★☆☆{% else %}★★☆☆☆{% endif %}</span>
+            <span class="rating-count">({{ product.reviews }})</span>
+          </div>
+          <div class="price-section">
+            <span class="price">{{ format_price(product.price) }}</span>
+            <span class="original-price">{{ format_price(product.original_price) }}</span>
+          </div>
+          <div class="delivery">✓ Free Delivery</div>
+          <button onclick="addToCart({{ product.id }},'{{ product.name }}');event.preventDefault();">Add to Cart</button>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h2>No Products Found</h2>
+    <p>Sorry, we couldn't find any products in this category.</p>
+    <a href="{{ url_for('home') }}" class="back-btn">← Back to Home</a>
+  </div>
+  {% endif %}
+</div>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-section"><h4>MASKART</h4><a href="#">Our Story</a><a href="#">Careers</a><a href="#">Blog</a></div>
+    <div class="footer-section"><h4>Support</h4><a href="#">Contact Us</a><a href="#">FAQ</a><a href="#">Returns</a></div>
+    <div class="footer-section"><h4>Policies</h4><a href="#">Privacy Policy</a><a href="#">Terms</a></div>
+    <div class="footer-section"><h4>Connect</h4><a href="#">Instagram</a><a href="#">Twitter</a></div>
+  </div>
+  <div class="footer-bottom"><p>© 2026 MASKART. All Rights Reserved.</p></div>
+</footer>
+
+<script>
+  const allProducts={{ products|tojson }};
+  function showToast(m,e=false){const t=document.createElement('div');t.className=`toast ${e?'error':''}`;t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3200);}
+  function updateCartCount(){fetch('/get-cart-count').then(r=>r.json()).then(d=>{const el=document.getElementById('cart-count');el.textContent=d.cart_count;});}
+  function addToCart(id,name){
+    fetch(`/add-to-cart/${id}`,{method:'POST',headers:{'Content-Type':'application/json'}})
+    .then(r=>r.json()).then(d=>{if(d.status==='success'){showToast(`✓ ${name} added!`);updateCartCount();}else showToast('Error',true);});
+  }
+  function sortProducts(type){
+    let s=[...allProducts];
+    if(type==='price-low')s.sort((a,b)=>a.price-b.price);
+    else if(type==='price-high')s.sort((a,b)=>b.price-a.price);
+    else if(type==='rating')s.sort((a,b)=>b.rating-a.rating);
+    else if(type==='newest')s.sort((a,b)=>b.id-a.id);
+    const grid=document.getElementById('productsGrid');grid.innerHTML='';
+    s.forEach(p=>{
+      const r=p.rating;
+      const stars=r>=4.5?'★★★★★':r>=4?'★★★★☆':r>=3.5?'★★★☆☆':'★★☆☆☆';
+      const disc=Math.round((1-p.price/p.original_price)*100);
+      grid.innerHTML+=`<a href="/product/${p.id}" style="text-decoration:none;color:inherit;"><div class="card"><div class="card-image-container"><img src="{{ url_for('static', filename='images/') }}${p.image}" alt="${p.name}">${disc>0?`<span class="discount-badge">-${disc}%</span>`:''}</div><div class="card-content"><h3>${p.name}</h3><div class="rating"><span class="stars">${stars}</span><span class="rating-count">(${p.reviews})</span></div><div class="price-section"><span class="price">₹${p.price.toLocaleString()}</span><span class="original-price">₹${p.original_price.toLocaleString()}</span></div><div class="delivery">✓ Free Delivery</div><button onclick="addToCart(${p.id},'${p.name}');event.preventDefault();">Add to Cart</button></div></div></a>`;
+    });
+  }
+  document.addEventListener('DOMContentLoaded',updateCartCount);
+</script>
+</body>
+</html>

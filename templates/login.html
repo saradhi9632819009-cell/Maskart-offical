@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — MASKART</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#07070d;--surface:#1a1a2e;--border:rgba(255,255,255,0.07);
+      --gold:#c9a227;--gold-light:#e8c060;--red:#e84040;
+      --text:#eeeef8;--text-2:#8888aa;--text-3:#444466;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:var(--ink);font-family:'DM Sans',sans-serif;overflow:hidden;
+    }
+    .bg-glow{
+      position:fixed;inset:0;z-index:0;
+      background:radial-gradient(ellipse 60% 50% at 60% 40%,rgba(201,162,39,0.06) 0%,transparent 70%),
+                 radial-gradient(ellipse 40% 60% at 20% 80%,rgba(91,95,245,0.05) 0%,transparent 70%);
+    }
+    .back-btn{
+      position:fixed;top:24px;left:24px;z-index:20;
+      color:var(--gold);text-decoration:none;font-weight:600;font-size:14px;
+      display:flex;align-items:center;gap:8px;
+      background:rgba(26,26,46,0.7);border:1px solid var(--border);
+      padding:9px 16px;border-radius:50px;backdrop-filter:blur(12px);
+      transition:all 0.28s;
+    }
+    .back-btn:hover{background:rgba(201,162,39,0.1);border-color:rgba(201,162,39,0.3);}
+    .container{
+      background:rgba(26,26,46,0.88);backdrop-filter:blur(28px);
+      border:1px solid rgba(255,255,255,0.09);
+      padding:48px 42px;border-radius:22px;
+      box-shadow:0 24px 80px rgba(0,0,0,0.65);
+      width:100%;max-width:420px;position:relative;z-index:10;
+      animation:cardUp 0.55s cubic-bezier(0.4,0,0.2,1) both;
+    }
+    @keyframes cardUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    .logo{
+      font-family:'Playfair Display',serif;font-size:30px;font-weight:900;
+      color:var(--gold);letter-spacing:4px;text-transform:uppercase;
+      text-align:center;margin-bottom:6px;
+      text-shadow:0 0 28px rgba(201,162,39,0.35);
+    }
+    .subtitle{text-align:center;color:var(--text-3);font-size:13px;margin-bottom:36px;letter-spacing:0.3px;}
+    .input-group{margin-bottom:20px;}
+    .input-group label{
+      display:block;margin-bottom:8px;font-size:11px;font-weight:600;
+      color:var(--text-3);letter-spacing:1px;text-transform:uppercase;
+    }
+    .input-group input{
+      width:100%;padding:14px 17px;background:rgba(7,7,13,0.6);
+      border:1px solid var(--border);border-radius:10px;
+      font-size:15px;color:var(--text);font-family:'DM Sans',sans-serif;
+      transition:all 0.3s;outline:none;
+    }
+    .input-group input::placeholder{color:var(--text-3);}
+    .input-group input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,39,0.12);background:rgba(7,7,13,0.85);}
+    .btn{
+      width:100%;padding:15px;background:var(--gold);color:var(--ink);
+      border:none;border-radius:10px;font-size:15px;font-weight:700;
+      cursor:pointer;transition:all 0.3s;letter-spacing:0.5px;
+      font-family:'DM Sans',sans-serif;margin-top:6px;
+    }
+    .btn:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,162,39,0.38);}
+    .btn:disabled{background:var(--text-3);cursor:not-allowed;transform:none;box-shadow:none;}
+    .footer-links{text-align:center;margin-top:22px;font-size:13px;color:var(--text-3);}
+    .footer-links a{color:var(--gold);text-decoration:none;font-weight:600;transition:0.2s;}
+    .footer-links a:hover{color:var(--gold-light);}
+    .success-toast{
+      position:fixed;top:24px;right:24px;
+      background:rgba(14,164,114,0.15);border:1px solid rgba(14,164,114,0.4);
+      color:#4fffbe;padding:15px 22px;border-radius:12px;
+      box-shadow:0 8px 28px rgba(0,0,0,0.4);z-index:1000;font-weight:600;
+      animation:slideIn 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    @keyframes slideIn{from{transform:translateX(300px);opacity:0}to{transform:translateX(0);opacity:1}}
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <a href="{{ url_for('home') }}" class="back-btn">← Back to Home</a>
+
+  <div class="container">
+    <div class="logo">MASKART</div>
+    <div class="subtitle">Welcome back — sign in to continue</div>
+
+    <form id="loginForm" method="POST" action="{{ url_for('login') }}" onsubmit="handleLogin(event)">
+      <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" id="email" name="email" placeholder="your@email.com" required>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+      </div>
+      <button type="submit" class="btn" id="loginBtn">Sign In →</button>
+    </form>
+
+    <div class="footer-links" style="margin-top:20px;">
+      Don't have an account? <a href="{{ url_for('signup') }}">Sign up here</a>
+    </div>
+    <div class="footer-links" style="margin-top:10px;">
+      <a href="{{ url_for('index') }}">← Back to Login Portal</a>
+    </div>
+  </div>
+
+  <script>
+    function handleLogin(event){
+      event.preventDefault();
+      const email=document.getElementById('email').value;
+      const password=document.getElementById('password').value;
+      const btn=document.getElementById('loginBtn');
+      btn.textContent='Signing in…';btn.disabled=true;
+      const fd=new FormData();
+      fd.append('email',email);fd.append('password',password);
+      fetch('{{ url_for("login") }}',{method:'POST',body:fd})
+      .then(r=>r.json()).then(d=>{
+        if(d.status==='success'){
+          const t=document.createElement('div');
+          t.className='success-toast';t.textContent='✓ Login successful! Redirecting…';
+          document.body.appendChild(t);
+          setTimeout(()=>window.location.href='{{ url_for("home") }}',1500);
+        } else {
+          alert('Login failed: '+d.message);
+          btn.textContent='Sign In →';btn.disabled=false;
+        }
+      }).catch(()=>{alert('Error. Please try again.');btn.textContent='Sign In →';btn.disabled=false;});
+    }
+  </script>
+</body>
+</html>

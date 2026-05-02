@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MASKART — Gateway</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:#07070d; --surface:#1a1a2e; --surface-2:#212138;
+      --border:rgba(255,255,255,0.07); --gold:#c9a227; --gold-light:#e8c060;
+      --gold-dim:rgba(201,162,39,0.13); --accent:#5b5ff5;
+      --red:#e84040; --text:#eeeef8; --text-2:#8888aa; --text-3:#444466;
+      --radius:14px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      background:var(--ink); font-family:'DM Sans',sans-serif;
+      overflow:hidden; position:relative;
+    }
+
+    /* Animated mesh background */
+    .bg-mesh{
+      position:fixed; inset:0; z-index:0; overflow:hidden;
+    }
+    .bg-mesh::before{
+      content:'';position:absolute;
+      width:600px;height:600px;border-radius:50%;
+      background:radial-gradient(circle,rgba(91,95,245,0.08) 0%,transparent 70%);
+      top:-150px;left:-150px;animation:drift1 20s ease-in-out infinite;
+    }
+    .bg-mesh::after{
+      content:'';position:absolute;
+      width:500px;height:500px;border-radius:50%;
+      background:radial-gradient(circle,rgba(201,162,39,0.07) 0%,transparent 70%);
+      bottom:-100px;right:-100px;animation:drift2 25s ease-in-out infinite;
+    }
+    @keyframes drift1{0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(60px,40px) scale(1.1)}}
+    @keyframes drift2{0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-50px,-30px) scale(1.08)}}
+
+    /* Grid lines overlay */
+    .grid-overlay{
+      position:fixed;inset:0;z-index:0;
+      background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),
+                       linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);
+      background-size:60px 60px;
+      pointer-events:none;
+    }
+
+    .container{
+      background:rgba(26,26,46,0.85);
+      backdrop-filter:blur(28px);
+      -webkit-backdrop-filter:blur(28px);
+      border:1px solid rgba(255,255,255,0.09);
+      padding:44px 40px;
+      border-radius:22px;
+      box-shadow:0 24px 80px rgba(0,0,0,0.65);
+      width:100%;max-width:420px;
+      position:relative;z-index:10;
+      animation:cardUp 0.6s cubic-bezier(0.4,0,0.2,1) both;
+    }
+    @keyframes cardUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+
+    .logo-wrap{text-align:center;margin-bottom:10px;}
+    .logo{
+      font-family:'Playfair Display',serif;
+      font-size:34px;font-weight:900;
+      color:var(--gold);letter-spacing:5px;
+      text-transform:uppercase;
+      text-shadow:0 0 30px rgba(201,162,39,0.4);
+    }
+    .tagline{
+      text-align:center;font-size:12px;
+      color:var(--text-3);letter-spacing:2px;
+      text-transform:uppercase;margin-bottom:32px;
+    }
+
+    .tabs{
+      display:flex;background:rgba(7,7,13,0.5);
+      border:1px solid var(--border);
+      border-radius:50px;padding:5px;margin-bottom:30px;gap:4px;
+    }
+    .tab{
+      flex:1;padding:11px;text-align:center;cursor:pointer;
+      border-radius:50px;font-weight:600;font-size:13px;
+      color:var(--text-2);transition:all 0.3s;
+      letter-spacing:0.3px;
+    }
+    .tab.active{
+      background:var(--gold);color:var(--ink);
+      box-shadow:0 4px 16px rgba(201,162,39,0.35);
+    }
+
+    .form-section{display:none;animation:fadeIn 0.35s ease both;}
+    .form-section.active{display:block;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+    .input-group{margin-bottom:20px;}
+    .input-group label{
+      display:block;margin-bottom:8px;
+      font-size:12px;font-weight:600;
+      color:var(--text-3);letter-spacing:0.8px;text-transform:uppercase;
+    }
+    .input-group input{
+      width:100%;padding:14px 17px;
+      background:rgba(7,7,13,0.6);
+      border:1px solid var(--border);
+      border-radius:10px;
+      font-size:15px;color:var(--text);
+      font-family:'DM Sans',sans-serif;
+      transition:all 0.3s;outline:none;
+    }
+    .input-group input::placeholder{color:var(--text-3);}
+    .input-group input:focus{
+      border-color:var(--gold);
+      box-shadow:0 0 0 3px rgba(201,162,39,0.12);
+      background:rgba(7,7,13,0.85);
+    }
+
+    .btn{
+      width:100%;padding:15px;
+      background:var(--gold);color:var(--ink);
+      border:none;border-radius:10px;
+      font-size:15px;font-weight:700;cursor:pointer;
+      transition:all 0.3s;margin-top:6px;
+      letter-spacing:0.5px;font-family:'DM Sans',sans-serif;
+    }
+    .btn:hover{
+      background:var(--gold-light);
+      transform:translateY(-2px);
+      box-shadow:0 8px 28px rgba(201,162,39,0.38);
+    }
+
+    .error-msg{
+      background:rgba(232,64,64,0.12);
+      border:1px solid rgba(232,64,64,0.3);
+      color:#ff8080;
+      padding:13px 16px;border-radius:9px;
+      margin-bottom:22px;font-size:13px;text-align:center;
+    }
+
+    .footer-links{
+      text-align:center;margin-top:24px;
+      font-size:13px;color:var(--text-3);
+    }
+    .footer-links a{color:var(--gold);text-decoration:none;font-weight:600;transition:0.2s;}
+    .footer-links a:hover{color:var(--gold-light);}
+
+    .divider{
+      display:flex;align-items:center;gap:12px;
+      margin:22px 0;color:var(--text-3);font-size:12px;
+    }
+    .divider::before,.divider::after{
+      content:'';flex:1;
+      height:1px;background:var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="grid-overlay"></div>
+
+  <div class="container">
+    <div class="logo-wrap"><div class="logo">MASKART</div></div>
+    <div class="tagline">Premium Shopping Gateway</div>
+
+    {% if error %}
+    <div class="error-msg">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchLogin('user',event)">User Login</div>
+      <div class="tab" onclick="switchLogin('admin',event)">Admin Login</div>
+    </div>
+
+    <form method="POST" action="{{ url_for('index') }}">
+      <input type="hidden" name="role" id="role-input" value="user">
+
+      <div id="user-section" class="form-section active">
+        <div class="input-group">
+          <label>Email Address</label>
+          <input type="email" id="email" name="email" placeholder="your@email.com">
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="user-password" name="password" placeholder="Enter your password">
+        </div>
+      </div>
+
+      <div id="admin-section" class="form-section">
+        <div class="input-group">
+          <label>Admin Master Password</label>
+          <input type="password" id="admin-password" name="password" disabled placeholder="Enter admin password">
+        </div>
+      </div>
+
+      <button type="submit" class="btn">Enter MASKART →</button>
+    </form>
+
+    <div class="divider">or</div>
+
+    <div class="footer-links">
+      New here? <a href="{{ url_for('signup') }}">Create an account</a>
+    </div>
+    <div class="footer-links" style="margin-top:10px;font-size:12px;">
+      Secure login gateway for MASKART users and administrators.
+    </div>
+  </div>
+
+  <script>
+    function switchLogin(role,evt){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      evt.target.classList.add('active');
+      document.getElementById('role-input').value=role;
+      document.querySelectorAll('.form-section').forEach(s=>s.classList.remove('active'));
+      if(role==='user'){
+        document.getElementById('user-section').classList.add('active');
+        document.getElementById('email').disabled=false;
+        document.getElementById('user-password').disabled=false;
+        document.getElementById('user-password').name='password';
+        document.getElementById('admin-password').disabled=true;
+        document.getElementById('admin-password').name='';
+      } else {
+        document.getElementById('admin-section').classList.add('active');
+        document.getElementById('email').disabled=true;
+        document.getElementById('user-password').disabled=true;
+        document.getElementById('admin-password').disabled=false;
+        document.getElementById('admin-password').name='password';
+        document.getElementById('user-password').name='';
+      }
+    }
+  </script>
+</body>
+</html>

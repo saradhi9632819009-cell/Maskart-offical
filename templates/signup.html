@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up — MASKART</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#07070d;--surface:#1a1a2e;--border:rgba(255,255,255,0.07);
+      --gold:#c9a227;--gold-light:#e8c060;--red:#e84040;--green:#0ea472;
+      --text:#eeeef8;--text-2:#8888aa;--text-3:#444466;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:var(--ink);font-family:'DM Sans',sans-serif;padding:24px;
+    }
+    .bg-glow{
+      position:fixed;inset:0;z-index:0;
+      background:radial-gradient(ellipse 55% 50% at 35% 60%,rgba(91,95,245,0.07) 0%,transparent 70%),
+                 radial-gradient(ellipse 45% 40% at 75% 20%,rgba(201,162,39,0.06) 0%,transparent 70%);
+    }
+    .container{
+      background:rgba(26,26,46,0.88);backdrop-filter:blur(28px);
+      border:1px solid rgba(255,255,255,0.09);
+      padding:48px 42px;border-radius:22px;
+      box-shadow:0 24px 80px rgba(0,0,0,0.65);
+      width:100%;max-width:440px;position:relative;z-index:10;
+      animation:cardUp 0.55s cubic-bezier(0.4,0,0.2,1) both;
+    }
+    @keyframes cardUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    .logo{
+      font-family:'Playfair Display',serif;font-size:30px;font-weight:900;
+      color:var(--gold);letter-spacing:4px;text-transform:uppercase;
+      text-align:center;margin-bottom:6px;
+      text-shadow:0 0 28px rgba(201,162,39,0.35);
+    }
+    .subtitle{text-align:center;color:var(--text-3);font-size:13px;margin-bottom:32px;}
+    .alert{padding:13px 16px;border-radius:9px;margin-bottom:20px;font-size:13px;display:flex;align-items:center;gap:9px;}
+    .alert-error{background:rgba(232,64,64,0.1);border:1px solid rgba(232,64,64,0.3);color:#ff8888;}
+    .alert-success{background:rgba(14,164,114,0.1);border:1px solid rgba(14,164,114,0.3);color:#4fffbe;}
+    .input-group{margin-bottom:18px;}
+    .input-group label{
+      display:block;margin-bottom:8px;font-size:11px;font-weight:600;
+      color:var(--text-3);letter-spacing:1px;text-transform:uppercase;
+    }
+    .input-group input{
+      width:100%;padding:14px 17px;background:rgba(7,7,13,0.6);
+      border:1px solid var(--border);border-radius:10px;
+      font-size:15px;color:var(--text);font-family:'DM Sans',sans-serif;
+      transition:all 0.3s;outline:none;
+    }
+    .input-group input::placeholder{color:var(--text-3);}
+    .input-group input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,39,0.12);background:rgba(7,7,13,0.85);}
+    .hint{font-size:11px;color:var(--text-3);margin-top:5px;}
+    .btn{
+      width:100%;padding:15px;background:var(--gold);color:var(--ink);
+      border:none;border-radius:10px;font-size:15px;font-weight:700;
+      cursor:pointer;transition:all 0.3s;letter-spacing:0.5px;
+      font-family:'DM Sans',sans-serif;margin-top:6px;
+    }
+    .btn:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,162,39,0.38);}
+    .footer-links{text-align:center;margin-top:20px;font-size:13px;color:var(--text-3);}
+    .footer-links a{color:var(--gold);text-decoration:none;font-weight:600;transition:0.2s;}
+    .footer-links a:hover{color:var(--gold-light);}
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="container">
+    <div class="logo">MASKART</div>
+    <div class="subtitle">Create your account to start shopping</div>
+
+    {% if error %}<div class="alert alert-error">⚠️ {{ error }}</div>{% endif %}
+    {% if success %}<div class="alert alert-success">✅ {{ success }}</div>{% endif %}
+
+    <form method="POST" action="{{ url_for('signup') }}">
+      <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" name="name" placeholder="Enter your full name" value="{{ name or '' }}" required>
+      </div>
+      <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" name="email" placeholder="your@email.com" value="{{ email or '' }}" required>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Create a password" required minlength="6">
+        <p class="hint">Minimum 6 characters</p>
+      </div>
+      <div class="input-group">
+        <label>Confirm Password</label>
+        <input type="password" name="confirm_password" placeholder="Repeat your password" required>
+      </div>
+      <button type="submit" class="btn">Create Account →</button>
+    </form>
+
+    <div class="footer-links">Already have an account? <a href="{{ url_for('index') }}">Log in here</a></div>
+    <div class="footer-links" style="margin-top:10px;"><a href="{{ url_for('index') }}">← Back to Login</a></div>
+  </div>
+</body>
+</html>

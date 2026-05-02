@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ product.name }} — MASKART</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body{background:var(--ink);}
+    .product-main{padding:36px 52px;max-width:1200px;margin:0 auto;}
+    .details-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:52px;margin-bottom:44px;}
+
+    /* Image */
+    .img-gallery{}
+    .img-main{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:16px;height:460px;display:flex;align-items:center;
+      justify-content:center;overflow:hidden;cursor:zoom-in;position:relative;transition:0.3s;
+    }
+    .img-main:hover{box-shadow:0 16px 48px rgba(0,0,0,0.5);}
+    .img-main img{max-width:100%;max-height:100%;object-fit:contain;transition:transform 0.45s ease;}
+    .img-main:hover img{transform:scale(1.06);}
+    .disc-badge-lg{
+      position:absolute;top:18px;right:18px;
+      background:var(--red);color:white;padding:10px 16px;
+      border-radius:9px;font-weight:700;font-size:15px;
+      box-shadow:0 4px 16px rgba(232,64,64,0.35);z-index:5;
+    }
+    .trust-badges{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:18px;}
+    .trust-badge{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:10px;padding:13px 10px;text-align:center;
+      font-size:12px;color:var(--text-2);font-weight:600;
+    }
+    .trust-badge-icon{font-size:22px;margin-bottom:5px;}
+
+    /* Info */
+    .product-info{display:flex;flex-direction:column;}
+    .product-brand{
+      display:inline-block;background:var(--gold-dim);
+      border:1px solid rgba(201,162,39,0.25);color:var(--gold);
+      padding:5px 14px;border-radius:50px;font-size:12px;font-weight:700;
+      margin-bottom:14px;letter-spacing:0.5px;
+    }
+    .product-info h1{
+      font-family:'Playfair Display',serif;
+      font-size:28px;color:var(--text);margin-bottom:14px;
+      font-weight:700;line-height:1.3;
+    }
+    .stock-status{
+      display:inline-flex;align-items:center;gap:7px;
+      padding:8px 14px;background:var(--green-dim);
+      border:1px solid rgba(14,164,114,0.2);
+      color:var(--green);border-radius:8px;font-weight:600;font-size:13px;margin-bottom:16px;
+    }
+    .rating-section{
+      display:flex;align-items:center;gap:14px;
+      margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--border);
+    }
+    .rating-stars{color:var(--gold);font-size:20px;}
+    .rating-count{color:var(--text-3);font-size:14px;}
+    .rating-link{color:var(--gold);font-size:13px;text-decoration:none;}
+
+    .price-section-lg{
+      background:rgba(14,164,114,0.07);
+      border:1px solid rgba(14,164,114,0.18);border-left:4px solid var(--green);
+      padding:22px;border-radius:12px;margin-bottom:22px;
+    }
+    .price-row{display:flex;align-items:center;gap:18px;margin-bottom:13px;flex-wrap:wrap;}
+    .price-main{font-size:40px;font-weight:800;color:var(--green);font-family:'Playfair Display',serif;}
+    .price-orig{font-size:20px;color:var(--text-3);text-decoration:line-through;}
+    .price-disc{background:var(--red);color:white;padding:5px 12px;border-radius:7px;font-weight:700;font-size:13px;}
+    .price-info{color:var(--text-3);font-size:13px;}
+
+    .qty-selector{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+    .qty-selector label{font-weight:600;color:var(--text-2);font-size:14px;min-width:72px;}
+    .qty-input{display:flex;align-items:center;border:1px solid var(--border);border-radius:9px;overflow:hidden;background:var(--surface);}
+    .qty-input button{background:var(--surface-2);border:none;padding:10px 14px;cursor:pointer;font-size:20px;color:var(--gold);transition:0.2s;}
+    .qty-input button:hover{background:var(--gold);color:var(--ink);}
+    .qty-input input{border:none;background:transparent;text-align:center;width:52px;padding:10px 0;font-weight:700;font-size:15px;color:var(--text);outline:none;font-family:'DM Sans',sans-serif;}
+
+    .action-btns{display:flex;gap:13px;margin-bottom:28px;}
+    .btn-add-cart{
+      flex:1;padding:16px;background:var(--gold);color:var(--ink);
+      border:none;border-radius:11px;font-weight:700;font-size:15px;cursor:pointer;
+      transition:all 0.3s;font-family:'DM Sans',sans-serif;
+    }
+    .btn-add-cart:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 10px 28px rgba(201,162,39,0.35);}
+    .btn-wishlist{
+      padding:16px 20px;background:var(--surface-2);border:1px solid var(--border);
+      color:var(--text-2);border-radius:11px;font-size:20px;cursor:pointer;transition:0.28s;
+    }
+    .btn-wishlist:hover{border-color:var(--red);color:var(--red);}
+
+    .delivery-info{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
+    .delivery-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:14px;}
+    .delivery-row:last-child{border-bottom:none;}
+    .delivery-row span:first-child{font-size:22px;}
+    .delivery-row strong{color:var(--text);}
+    .delivery-row p{color:var(--text-3);font-size:12px;margin-top:2px;}
+
+    /* Description + Specs */
+    .info-tabs{padding:0 52px 44px;max-width:1200px;margin:0 auto;}
+    .tab-nav{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:28px;}
+    .tab-nav button{
+      padding:13px 24px;background:none;border:none;border-bottom:3px solid transparent;
+      color:var(--text-3);font-weight:600;font-size:14px;cursor:pointer;transition:0.25s;
+      font-family:'DM Sans',sans-serif;letter-spacing:0.2px;
+    }
+    .tab-nav button.active{color:var(--gold);border-bottom-color:var(--gold);}
+    .tab-pane{display:none;}
+    .tab-pane.active{display:block;}
+    .desc-text{color:var(--text-2);line-height:1.8;font-size:15px;}
+    .specs-table{width:100%;border-collapse:collapse;}
+    .specs-table tr:nth-child(even) td{background:var(--surface);}
+    .specs-table td{padding:13px 18px;font-size:14px;border-bottom:1px solid var(--border);color:var(--text-2);}
+    .specs-table td:first-child{color:var(--text);font-weight:600;width:38%;}
+
+    /* Related products */
+    .related-section{padding:0 52px 52px;max-width:1200px;margin:0 auto;}
+    .related-section h2{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);margin-bottom:22px;font-weight:700;}
+
+    @media(max-width:900px){
+      .product-main,.info-tabs,.related-section{padding-left:18px;padding-right:18px;}
+      .details-wrapper{grid-template-columns:1fr;gap:28px;}
+      .action-btns{flex-direction:column;}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="{{ url_for('home') }}" class="logo">MASKART</a>
+  <div class="search-container">
+    <form action="{{ url_for('search') }}" method="GET">
+      <input type="text" name="q" placeholder="Search products…" required>
+      <button type="submit">🔍 Search</button>
+    </form>
+  </div>
+  <div class="nav-links">
+    <a href="{{ url_for('login') }}">👤 Login</a>
+    <a href="{{ url_for('view_cart') }}" style="position:relative;">
+      🛒 Cart
+      <span id="cart-count" style="position:absolute;top:-8px;right:-8px;background:var(--red);color:white;width:19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">0</span>
+    </a>
+  </div>
+</nav>
+
+<div class="breadcrumb">
+  <a href="{{ url_for('home') }}">Home</a> /
+  <a href="{{ url_for('category', category_name=product.category) }}">{{ product.category }}</a> /
+  {{ product.name[:40] }}{% if product.name|length > 40 %}…{% endif %}
+</div>
+
+<div class="product-main">
+  <div class="details-wrapper">
+
+    <!-- Image Section -->
+    <div class="img-gallery">
+      <div class="img-main">
+        <img src="{{ url_for('static', filename='images/' + product.image) }}" alt="{{ product.name }}" id="mainImg">
+        {% set discount = ((1 - product.price / product.original_price)*100)|int %}
+        {% if discount > 0 %}<span class="disc-badge-lg">{{ discount }}% OFF</span>{% endif %}
+      </div>
+      <div class="trust-badges">
+        <div class="trust-badge"><div class="trust-badge-icon">✅</div>Genuine Product</div>
+        <div class="trust-badge"><div class="trust-badge-icon">🔄</div>Easy Returns</div>
+        <div class="trust-badge"><div class="trust-badge-icon">🔒</div>Secure Pay</div>
+      </div>
+    </div>
+
+    <!-- Info Section -->
+    <div class="product-info">
+      <span class="product-brand">{{ product.category }}</span>
+      <h1>{{ product.name }}</h1>
+      <span class="stock-status">● In Stock</span>
+
+      <div class="rating-section">
+        <span class="rating-stars">
+          {% set r=product.rating %}
+          {% if r>=4.5 %}★★★★★{% elif r>=4 %}★★★★☆{% elif r>=3.5 %}★★★☆☆{% else %}★★☆☆☆{% endif %}
+        </span>
+        <span style="font-weight:700;color:var(--text);">{{ product.rating }}</span>
+        <span class="rating-count">{{ product.reviews }} reviews</span>
+        <a href="#reviews" class="rating-link">See all reviews</a>
+      </div>
+
+      <div class="price-section-lg">
+        <div class="price-row">
+          <span class="price-main">{{ format_price(product.price) }}</span>
+          <span class="price-orig">{{ format_price(product.original_price) }}</span>
+          {% if discount > 0 %}<span class="price-disc">{{ discount }}% OFF</span>{% endif %}
+        </div>
+        <p class="price-info">Inclusive of all taxes | EMI from ₹{{ (product.price / 12)|int }}/mo</p>
+      </div>
+
+      <div class="qty-selector">
+        <label>Quantity</label>
+        <div class="qty-input">
+          <button type="button" onclick="changeQty(-1)">−</button>
+          <input type="number" id="qty" value="1" min="1" max="10">
+          <button type="button" onclick="changeQty(1)">+</button>
+        </div>
+      </div>
+
+      <div class="action-btns">
+        <button class="btn-add-cart" onclick="addToCart({{ product.id }}, '{{ product.name }}')">🛒 Add to Cart</button>
+        <button class="btn-wishlist" title="Add to Wishlist">♡</button>
+      </div>
+
+      <div class="delivery-info">
+        <div class="delivery-row">
+          <span>🚚</span>
+          <div><strong>Free Delivery</strong><p>Available on orders above ₹499</p></div>
+        </div>
+        <div class="delivery-row">
+          <span>🔄</span>
+          <div><strong>30-Day Returns</strong><p>Hassle-free return policy</p></div>
+        </div>
+        <div class="delivery-row">
+          <span>🛡️</span>
+          <div><strong>Warranty</strong><p>1-year manufacturer warranty</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Description + Specs Tabs -->
+<div class="info-tabs">
+  <div class="tab-nav">
+    <button class="active" onclick="switchTab('desc',this)">Description</button>
+    {% if product.specifications %}<button onclick="switchTab('specs',this)">Specifications</button>{% endif %}
+  </div>
+  <div id="tab-desc" class="tab-pane active">
+    <p class="desc-text">{{ product.description }}</p>
+  </div>
+  {% if product.specifications %}
+  <div id="tab-specs" class="tab-pane">
+    <table class="specs-table">
+      {% for key, val in product.specifications.items() %}
+      <tr><td>{{ key }}</td><td>{{ val }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Related Products -->
+{% if related_products %}
+<div class="related-section">
+  <h2>You May Also Like</h2>
+  <div class="product-grid">
+    {% for rp in related_products[:4] %}
+    <a href="{{ url_for('product_details', product_id=rp.id) }}" style="text-decoration:none;color:inherit;">
+      <div class="card">
+        <div class="card-image-container">
+          <img src="{{ url_for('static', filename='images/' + rp.image) }}" alt="{{ rp.name }}" loading="lazy">
+          {% set rd=((1-rp.price/rp.original_price)*100)|int %}{% if rd>0 %}<span class="discount-badge">-{{ rd }}%</span>{% endif %}
+        </div>
+        <div class="card-content">
+          <h3>{{ rp.name }}</h3>
+          <div class="rating">
+            <span class="stars">{% set rr=rp.rating %}{% if rr>=4.5 %}★★★★★{% elif rr>=4 %}★★★★☆{% else %}★★★☆☆{% endif %}</span>
+            <span class="rating-count">({{ rp.reviews }})</span>
+          </div>
+          <div class="price-section">
+            <span class="price">{{ format_price(rp.price) }}</span>
+            <span class="original-price">{{ format_price(rp.original_price) }}</span>
+          </div>
+          <div class="delivery">✓ Free Delivery</div>
+          <button onclick="addToCart({{ rp.id }},'{{ rp.name }}');event.preventDefault();">Add to Cart</button>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-section"><h4>MASKART</h4><a href="#">Our Story</a><a href="#">Careers</a><a href="#">Blog</a></div>
+    <div class="footer-section"><h4>Support</h4><a href="#">Contact Us</a><a href="#">FAQ</a><a href="#">Returns</a></div>
+    <div class="footer-section"><h4>Policies</h4><a href="#">Privacy Policy</a><a href="#">Terms</a></div>
+    <div class="footer-section"><h4>Connect</h4><a href="#">Instagram</a><a href="#">Twitter</a></div>
+  </div>
+  <div class="footer-bottom"><p>© 2026 MASKART. All Rights Reserved.</p></div>
+</footer>
+
+<script>
+  function changeQty(d){const i=document.getElementById('qty');let v=parseInt(i.value)+d;if(v<1)v=1;if(v>10)v=10;i.value=v;}
+  function showToast(m,e=false){const t=document.createElement('div');t.className=`toast ${e?'error':''}`;t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3200);}
+  function updateCartCount(){fetch('/get-cart-count').then(r=>r.json()).then(d=>{document.getElementById('cart-count').textContent=d.cart_count;});}
+  function addToCart(id,name){
+    const qty=parseInt(document.getElementById('qty')?.value||1);
+    fetch(`/add-to-cart/${id}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({quantity:qty})})
+    .then(r=>r.json()).then(d=>{
+      if(d.status==='success'){showToast(`✓ ${name} added to cart!`);updateCartCount();}
+      else showToast('Error adding to cart',true);
+    }).catch(()=>showToast('Error',true));
+  }
+  function switchTab(id,btn){
+    document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab-nav button').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tab-'+id).classList.add('active');
+    btn.classList.add('active');
+  }
+  document.addEventListener('DOMContentLoaded',updateCartCount);
+</script>
+</body>
+</html>

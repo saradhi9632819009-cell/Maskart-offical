@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Product - MASKART Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: #f0f0f0;
+        }
+
+        .edit-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .edit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .edit-header h1 {
+            color: #1e3a8a;
+            font-size: 28px;
+        }
+
+        .form-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #1e40af;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-full {
+            grid-column: 1 / -1;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #1e40af;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3a8a;
+        }
+
+        .btn-cancel {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-cancel:hover {
+            background: #d1d5db;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #7f1d1d;
+            border-left: 4px solid #ef4444;
+        }
+
+        .specs-section {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .spec-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: flex-start;
+        }
+
+        .spec-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .spec-key, .spec-value {
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .btn-remove-spec {
+            background: #ef4444;
+            color: white;
+            padding: 8px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .btn-remove-spec:hover {
+            background: #dc2626;
+        }
+
+        .btn-add-spec {
+            background: #10b981;
+            color: white;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .btn-add-spec:hover {
+            background: #059669;
+        }
+
+        .product-id {
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #1e40af;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="{{ url_for('home') }}" style="text-decoration: none;"><div class="logo">MASKART</div></a>
+    <div style="flex: 1; text-align: center; color: white; font-weight: bold;">Admin Panel</div>
+    <div class="nav-links">
+        <a href="{{ url_for('admin') }}">📊 Admin</a>
+        <form action="{{ url_for('admin_logout') }}" method="POST" style="display: inline;">
+            <button type="submit" style="background: #ef4444; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">🚪 Logout</button>
+        </form>
+    </div>
+</nav>
+
+<div class="edit-container">
+    <div class="edit-header">
+        <h1>Edit Product</h1>
+        <span class="product-id">Product #{{ product.id }}</span>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <div class="form-section">
+        <form method="POST" action="{{ url_for('admin_update_product', product_id=product.id) }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Product Name *</label>
+                    <input type="text" name="name" value="{{ product.name }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select name="category" required>
+                        <option value="Mobile" {% if product.category == 'Mobile' %}selected{% endif %}>Mobile</option>
+                        <option value="Electronics" {% if product.category == 'Electronics' %}selected{% endif %}>Electronics</option>
+                        <option value="Furniture" {% if product.category == 'Furniture' %}selected{% endif %}>Furniture</option>
+                        <option value="Watches" {% if product.category == 'Watches' %}selected{% endif %}>Watches</option>
+                        <option value="Accessories" {% if product.category == 'Accessories' %}selected{% endif %}>Accessories</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Price (₹) *</label>
+                    <input type="number" name="price" value="{{ product.price }}" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Original Price (₹) *</label>
+                    <input type="number" name="original_price" value="{{ product.original_price }}" required min="0">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Image Name *</label>
+                    <input type="text" name="image" value="{{ product.image }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Rating (0-5) *</label>
+                    <input type="number" name="rating" value="{{ product.rating }}" min="0" max="5" step="0.1" required>
+                </div>
+            </div>
+
+            <div class="form-group form-full">
+                <label>Reviews Count *</label>
+                <input type="number" name="reviews" value="{{ product.reviews }}" required min="0">
+            </div>
+
+            <div class="form-group form-full">
+                <label>Description *</label>
+                <textarea name="description" required>{{ product.description }}</textarea>
+            </div>
+
+            <div class="form-group form-full">
+                <label>Specifications</label>
+                <div class="specs-section" id="specs-section">
+                    {% if product.specifications %}
+                        {% for key, value in product.specifications.items() %}
+                        <div class="spec-item">
+                            <input type="text" class="spec-key" name="spec_keys[]" value="{{ key }}" placeholder="Key">
+                            <input type="text" class="spec-value" name="spec_values[]" value="{{ value }}" placeholder="Value">
+                            <button type="button" class="btn-remove-spec" onclick="removeSpecField(this)">✕</button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <button type="button" class="btn btn-add-spec" onclick="addSpecField()">+ Add Specification</button>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">Update Product</button>
+                <a href="{{ url_for('admin') }}" class="btn btn-cancel" style="text-decoration: none; display: flex; align-items: center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function addSpecField() {
+        const specsSection = document.getElementById('specs-section');
+        const specItem = document.createElement('div');
+        specItem.className = 'spec-item';
+        specItem.innerHTML = `
+            <input type="text" class="spec-key" name="spec_keys[]" placeholder="Key">
+            <input type="text" class="spec-value" name="spec_values[]" placeholder="Value">
+            <button type="button" class="btn-remove-spec" onclick="removeSpecField(this)">✕</button>
+        `;
+        specsSection.appendChild(specItem);
+    }
+
+    function removeSpecField(button) {
+        button.closest('.spec-item').remove();
+    }
+</script>
+
+</body>
+</html>
